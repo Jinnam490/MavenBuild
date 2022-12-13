@@ -1,33 +1,49 @@
-node('') {
-	stage ('checkout code'){
-		checkout scm
-	}
-	
-	stage ('Build'){
-		sh "mvn clean install -Dmaven.test.skip=true"
-	}
+pipeline{
 
-	stage ('Test Cases Execution'){
-		sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test"
-	}
+    
+agent any
 
-	stage ('Sonar Analysis'){
-		//sh 'mvn sonar:sonar -Dsonar.host.url=http://35.153.67.119:9000 -Dsonar.login=77467cfd2653653ad3b35463fbfdb09285f08be5'
-	}
+stages('CI CD Pipeline'){
 
-	stage ('Archive Artifacts'){
-		archiveArtifacts artifacts: 'target/*.war'
+  stage('Code Checkout'){
+    steps{
+        script{
+
+            git credentialsId: '0785a37c-780c-4b71-9322-8f503b77cc1b', url: 'https://github.com/Jinnam490/MavenBuild.git'
+
+            }
+
+        }
+
+    }
+
+
+  stage('Build'){
+
+    steps{
+
+        script{
+
+            sh "mvn clean install -Dmaven.test.skip=true"
+
+        }
+
+    }  
+
+  }
+
+  stage('Test'){
+
+    steps{
+
+        script{
+
+            sh "mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install -Pcoverage-per-test"
 	}
-	
-	stage ('Deployment'){
-		ansiblePlaybook colorized: true, disableHostKeyChecking: true, playbook: 'deploy.yml'
-	}
-	
-	stage ('Notification'){
-		emailext (
-		      subject: "Job Completed",
-		      body: "Jenkins Pipeline Job for Maven Build got completed !!!",
-		      to: "build-alerts@example.com"
-		    )
-	}
+        
+    }  
+  }  
+
+}
+
 }
